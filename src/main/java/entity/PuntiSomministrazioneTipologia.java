@@ -1,70 +1,65 @@
 package entity;
 
-public class PuntiSomministrazioneTipologia {
+import java.io.Serializable;
 
-    private String id;
+public class PuntiSomministrazioneTipologia implements Serializable {
+
     private String area;                        //regione
-    private String denominazione_struttura;     //presidio di somministrazione
+    private String denominazioneStruttura;     //presidio di somministrazione
     private String tipologia;                   //Tipologia del presidio di somministrazione: ospedaliero o territoriale
-    private String codice_NUTS1;                //Classificazione europea delle unità territoriali NUTS: livello NUTS 1
-    private String getCodice_NUTS2;             //Classificazione europea delle unità territoriali NUTS: livello NUTS 2
-    private Integer codice_regione_ISTAT;       //Codice ISTAT della Regione
-    private String nome_regione;                //Denominazione standard dell’area (dove necessario denominazione bilingue)
+    private String codiceNUTS1;                //Classificazione europea delle unità territoriali NUTS: livello NUTS 1
+    private String codiceNUTS2;             //Classificazione europea delle unità territoriali NUTS: livello NUTS 2
+    private Integer codiceRegioneISTAT;       //Codice ISTAT della Regione
+    private String nomeRegione;                //Denominazione standard dell’area (dove necessario denominazione bilingue)
 
-    public PuntiSomministrazioneTipologia(String id, String area, String denominazione_struttura, String tipologia, String codice_NUTS1, String getCodice_NUTS2, Integer codice_regione_ISTAT, String nome_regione) {
-        this.id = id;
+    public PuntiSomministrazioneTipologia(String area, String denominazioneStruttura, String tipologia, String codiceNUTS1, String codiceNuts2, Integer codiceRegioneISTAT, String nomeRegione) {
         this.area = area;
-        this.denominazione_struttura = denominazione_struttura;
+        this.denominazioneStruttura = denominazioneStruttura;
         this.tipologia = tipologia;
-        this.codice_NUTS1 = codice_NUTS1;
-        this.getCodice_NUTS2 = getCodice_NUTS2;
-        this.codice_regione_ISTAT = codice_regione_ISTAT;
-        this.nome_regione = nome_regione;
-    }
-
-    public String getId() {
-        return id;
+        this.codiceNUTS1 = codiceNUTS1;
+        this.codiceNUTS2 = codiceNuts2;
+        this.codiceRegioneISTAT = codiceRegioneISTAT;
+        this.nomeRegione = nomeRegione;
     }
 
     public String getArea() {
         return area;
     }
 
-    public String getDenominazione_struttura() {
-        return denominazione_struttura;
+    public String getDenominazioneStruttura() {
+        return denominazioneStruttura;
     }
 
     public String getTipologia() {
         return tipologia;
     }
 
-    public String getCodice_NUTS1() {
-        return codice_NUTS1;
+    public String getCodiceNUTS1() {
+        return codiceNUTS1;
     }
 
-    public String getGetCodice_NUTS2() {
-        return getCodice_NUTS2;
+    public String getCodiceNUTS2() {
+        return codiceNUTS2;
     }
 
-    public Integer getCodice_regione_ISTAT() {
-        return codice_regione_ISTAT;
+    public Integer getCodiceRegioneISTAT() {
+        return codiceRegioneISTAT;
     }
 
-    public String getNome_regione() {
-        return nome_regione;
+    public String getNomeRegione() {
+        return nomeRegione;
     }
 
     @Override
     public String toString() {
         return "PuntiSomministrazioneTipologia{" +
-                "id='" + id + '\'' +
                 ", area='" + area + '\'' +
-                ", denominazione_struttura='" + denominazione_struttura + '\'' +
+                ", denominazione_struttura='" + denominazioneStruttura + '\'' +
                 ", tipologia='" + tipologia + '\'' +
-                ", codice_NUTS1='" + codice_NUTS1 + '\'' +
-                ", getCodice_NUTS2='" + getCodice_NUTS2 + '\'' +
-                ", codice_regione_ISTAT=" + codice_regione_ISTAT +
-                ", nome_regione='" + nome_regione + '\'' +
+                ", codice_NUTS1='" + codiceNUTS1 + '\'' +
+                ", getCodice_NUTS2='" + codiceNUTS2 + '\'' +
+                ", codice_regione_ISTAT=" + codiceRegioneISTAT +
+                ", nome_regione='" + nomeRegione + '\'' +
                 '}';
     }
 }
