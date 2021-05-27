@@ -1,29 +1,31 @@
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
 import queryone.QueryOne;
 import queryone.OneSparkSql;
-import scala.Tuple2;
+import querytwo.QueryTwo;
 import scala.Tuple3;
 import utils.SparkConfig;
-import utils.WriteFile;
 
+import java.text.ParseException;
 
 public class Main {
 
-    public static void main(String[] args) {
-        long start = System.nanoTime();
-
+    public static void main(String[] args) throws ParseException {
         SparkConf conf = SparkConfig.sparkConfig();
         JavaSparkContext sc = SparkConfig.initJavaSparkContext(conf);
+        SparkSession sparkSession = SparkConfig.sparkSession();
 
-        JavaPairRDD<String, Tuple2<String, Float>>  resultQueryOne = QueryOne.queryOne(sc);
+        long start = System.nanoTime();
+
+        QueryOne.queryOne(sparkSession, sc);
+        QueryTwo.queryTwo(sc, sparkSession);
 
         long end = System.nanoTime();
-
-        WriteFile.writeQueryOne(resultQueryOne);
         System.out.println("Processed in : " + (int) (end - start) / 1000000 + " ms");
+
+        sparkSession.close();
         SparkConfig.sparkStop(sc);
     }
 

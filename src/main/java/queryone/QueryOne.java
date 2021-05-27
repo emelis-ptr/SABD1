@@ -1,43 +1,51 @@
 package queryone;
 
+import dataset.DatasetS;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
+import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
-import utils.Comparator;
+import utils.ComparatorTuple;
+import utils.Data;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.*;
 
 import static java.util.Calendar.MONTH;
-import static utils.Constants.PATH_PST;
-import static utils.Constants.PATH_SVSL;
+import static utils.Constants.*;
 
 public class QueryOne {
+
+    private QueryOne(){}
 
     /**
      * Query one
      *
      * @param sc:
-     * @return :
      */
-    public static JavaPairRDD<String, Tuple2<String, Float>> queryOne(JavaSparkContext sc) {
+    public static void queryOne(SparkSession sparkSession, JavaSparkContext sc) {
         JavaPairRDD<String, Long> pstPair = getJavaPairPST(sc);
         JavaPairRDD<String, Tuple2<String, Integer>> svslPair = getPairSLSV(sc);
 
         //Join
         JavaPairRDD<String, Tuple2<Long, Tuple2<String, Integer>>> joined = pstPair.join(svslPair);
 
-        return joined.mapToPair(
+        JavaPairRDD<String, Tuple2<String, Float>> finalRes = joined.mapToPair(
                 s -> {
                     float avg = (float) s._2._2._2 / s._2._1;
                     String month = Month.of(Integer.parseInt(s._2._2._1)).getDisplayName(TextStyle.FULL, Locale.ITALIAN);
                     return new Tuple2<>(month.toUpperCase(), new Tuple2<>(s._1, avg));
                 });
+
+        Dataset<Row> createSchema = DatasetS.createSchemaQuery1(sparkSession, finalRes);
+        createSchema.show(100);
+        createSchema.coalesce(1).write().mode(SaveMode.Overwrite).option("header",true).format(CSV_FORMAT).save(RES_DIR_QUERY1);
     }
 
     /**
@@ -75,32 +83,29 @@ public class QueryOne {
      */
     private static JavaPairRDD<String, Tuple2<String, Integer>> getPairSLSV(JavaSparkContext sc) {
         JavaRDD<String> svsl = sc.textFile(PATH_SVSL)
-                .sortBy((Function<String, String>) arg0 -> arg0.split(",")[0], true, 10);
+                .sortBy(arg0 -> arg0.split(SPLIT_COMMA)[0], true, 10);
 
         //Nome regione, Data, Totale e ordina in base al numero del mese
         // e tramite reducebyKey somma i valori associati alla stessa chiave
         JavaPairRDD<Tuple2<String, String>, Integer> svslPairs =
                 svsl.mapToPair(
                         s -> {
-                            String[] svslSplit = s.split(",");
+                            String[] svslSplit = s.split(SPLIT_COMMA);
                             String month = "";
                             try {
-                                Date date1 = new SimpleDateFormat("yyyy-MM-dd").parse(svslSplit[0]);
-                                Calendar cal = Calendar.getInstance();
-                                cal.setTime(date1);
+                                Calendar cal = Data.getMonth(svslSplit[0]);
                                 month = String.valueOf(cal.get(MONTH) + 1);
 
                             } catch (ParseException e) {
                                 e.printStackTrace();
                             }
                             return new Tuple2<>(new Tuple2<>(svslSplit[20], month), Integer.valueOf(svslSplit[2]));
-                        }).filter(x -> !x._1._2.equals("12".toUpperCase())).reduceByKey(Integer::sum)
-                        .sortByKey(new Comparator.TupleComparator(), true);
-
+                        }).filter(x -> !x._1._2.equalsIgnoreCase(IGNORE_MONTH)).reduceByKey(Integer::sum)
+                        .sortByKey(new ComparatorTuple.Tuple2ComparatorString(), true);
 
         //Nome regione, Data, Totale
         return svslPairs.mapToPair(
-                s -> new Tuple2<>(s._1._1, new Tuple2<>(s._1._2, s._2)));
+                s -> new Tuple2<>(s._1._1, new Tuple2<>(s._1._2, s._2))).sortByKey();
     }
 
 

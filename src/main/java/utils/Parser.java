@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 public class Parser {
 
-    public static SomministrazioniVacciniSummaryLatest parseCsvSVSL(String csvLine) throws ParseException {
+    public static SomministrazioniVacciniSummaryLatest parseCsvSVSL(String csvLine) {
 
         SomministrazioniVacciniSummaryLatest somministrazioniVacciniSummaryLatest;
         String[] csvValues = csvLine.split(",");

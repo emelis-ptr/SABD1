@@ -72,7 +72,7 @@ public class OneSparkSql {
         StructType schema = DataTypes.createStructType(fields);
 
         // Convert records of the RDD to Rows
-        JavaRDD<Row> rowRDD = values.map((Function<Tuple3<String, String, Integer>, Row>) val
+        JavaRDD<Row> rowRDD = values.map( val
                 -> RowFactory.create(val._1(), val._2(), val._3()));
 
         // Apply the schema to the RDD
@@ -96,7 +96,7 @@ public class OneSparkSql {
         StructType schema = DataTypes.createStructType(fields);
 
         // Convert records of the RDD to Rows
-        JavaRDD<Row> rowRDD = values.map((Function<Tuple3<String, String, String>, Row>) val
+        JavaRDD<Row> rowRDD = values.map( val
                 -> RowFactory.create(val._1(), val._2(), val._3()));
 
         // Apply the schema to the RDD

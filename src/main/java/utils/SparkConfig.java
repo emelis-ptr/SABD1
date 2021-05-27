@@ -2,8 +2,11 @@ package utils;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
 
 public class SparkConfig {
+
+    private SparkConfig(){}
 
     /**
      * @return :
@@ -30,5 +33,17 @@ public class SparkConfig {
      */
     public static void sparkStop(JavaSparkContext sc) {
         sc.stop();
+    }
+
+    /**
+     *
+     * @return :
+     */
+    public static SparkSession sparkSession(){
+       return SparkSession
+                .builder()
+                .appName("Project")
+                .master("local")
+                .getOrCreate();
     }
 }
