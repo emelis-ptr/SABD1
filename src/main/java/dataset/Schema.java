@@ -10,18 +10,13 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
-import utils.Data;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
-import static java.util.Calendar.MONTH;
+public class Schema {
 
-public class DatasetS {
-
-    private DatasetS(){}
+    private Schema() {
+    }
 
     /**
      * Metodo che crea un dataset
@@ -30,7 +25,7 @@ public class DatasetS {
      * @param values:
      * @return :
      */
-    public static Dataset<Row> createSchemaQuery1(SparkSession spark, JavaPairRDD<String, Tuple2<String, Float>> values) {
+    public static Dataset<Row> createSchemaFinalQuery1(SparkSession spark, JavaPairRDD<String, Tuple2<String, Float>> values) {
 
         // Generate the schema based on the string of schema
         List<StructField> fields = new ArrayList<>();
@@ -54,7 +49,7 @@ public class DatasetS {
      * @param values:
      * @return :
      */
-    public static Dataset<Row> createSchemaQuery2(SparkSession spark, JavaPairRDD<Tuple2<String, String>, Tuple2<Double, String>> values) {
+    public static Dataset<Row> createSchemaQuery3(SparkSession spark, JavaPairRDD<Tuple2<Date, String>, Tuple2<String, Double>> values) {
 
         // Generate the schema based on the string of schema
         List<StructField> fields = new ArrayList<>();
@@ -67,8 +62,12 @@ public class DatasetS {
         // Convert records of the RDD to Rows
         JavaRDD<Row> rowRDD = values.map(
                 val -> {
-                    String nextMonth = Data.getNextMonth(val._1._1).get(Calendar.DAY_OF_MONTH) + " " + Data.getNextMonth(val._1._1).getDisplayName(MONTH, Calendar.LONG, Locale.ITALIAN).toUpperCase(Locale.ROOT);
-                    return RowFactory.create(nextMonth, val._1._2, val._2._2, val._2._1);
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(val._1._1);
+
+                    String month = cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ITALIAN).substring(0,1).toUpperCase(Locale.ROOT) + cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ITALIAN).substring(1);
+                    String firstDayMonth = cal.get(Calendar.DAY_OF_MONTH) + " "  + month;
+                    return RowFactory.create(firstDayMonth, val._1._2(), val._2._1, val._2()._2);
                 }
         );
         // Apply the schema to the RDD

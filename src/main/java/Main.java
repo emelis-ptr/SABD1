@@ -1,25 +1,31 @@
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
-import queryone.QueryOne;
-import queryone.OneSparkSql;
-import querytwo.QueryTwo;
-import scala.Tuple3;
-import utils.SparkConfig;
+import queries.QueryOne;
+import queries.QueryTwo;
+import utils.FileInHdfs;
+import utils.LogFile;
+import config.SparkConfig;
+import utils.RenameFile;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 
 public class Main {
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws ParseException, IOException, URISyntaxException {
+        LogFile.setupLogger();
+
         SparkConf conf = SparkConfig.sparkConfig();
         JavaSparkContext sc = SparkConfig.initJavaSparkContext(conf);
         SparkSession sparkSession = SparkConfig.sparkSession();
 
+        FileInHdfs.copyFileToHDFS();
+
         long start = System.nanoTime();
 
-        QueryOne.queryOne(sparkSession, sc);
+       // QueryOne.queryOne(sparkSession, sc);
         QueryTwo.queryTwo(sc, sparkSession);
 
         long end = System.nanoTime();
@@ -27,17 +33,10 @@ public class Main {
 
         sparkSession.close();
         SparkConfig.sparkStop(sc);
+
+        RenameFile.renameFile();
     }
 
-    /**
-     * @param sc:
-     */
-    private static void sparkSQL(JavaSparkContext sc) {
-        JavaRDD<Tuple3<String, String, Integer>> value = OneSparkSql.queryOne2(sc);
-        JavaRDD<Tuple3<String, String, String>> pstValues = OneSparkSql.pstQuery(sc);
-
-        OneSparkSql.process(value, pstValues);
-    }
 
 
 

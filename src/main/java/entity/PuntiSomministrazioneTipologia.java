@@ -1,16 +1,19 @@
 package entity;
 
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Row;
+
 import java.io.Serializable;
 
 public class PuntiSomministrazioneTipologia implements Serializable {
 
-    private String area;                        //regione
-    private String denominazioneStruttura;     //presidio di somministrazione
-    private String tipologia;                   //Tipologia del presidio di somministrazione: ospedaliero o territoriale
-    private String codiceNUTS1;                //Classificazione europea delle unità territoriali NUTS: livello NUTS 1
-    private String codiceNUTS2;             //Classificazione europea delle unità territoriali NUTS: livello NUTS 2
-    private Integer codiceRegioneISTAT;       //Codice ISTAT della Regione
-    private String nomeRegione;                //Denominazione standard dell’area (dove necessario denominazione bilingue)
+    private final String area;                        //regione
+    private final String denominazioneStruttura;     //presidio di somministrazione
+    private final String tipologia;                   //Tipologia del presidio di somministrazione: ospedaliero o territoriale
+    private final String codiceNUTS1;                //Classificazione europea delle unità territoriali NUTS: livello NUTS 1
+    private final String codiceNUTS2;             //Classificazione europea delle unità territoriali NUTS: livello NUTS 2
+    private final Integer codiceRegioneISTAT;       //Codice ISTAT della Regione
+    private final String nomeRegione;                //Denominazione standard dell’area (dove necessario denominazione bilingue)
 
     public PuntiSomministrazioneTipologia(String area, String denominazioneStruttura, String tipologia, String codiceNUTS1, String codiceNuts2, Integer codiceRegioneISTAT, String nomeRegione) {
         this.area = area;
@@ -30,24 +33,23 @@ public class PuntiSomministrazioneTipologia implements Serializable {
         return denominazioneStruttura;
     }
 
-    public String getTipologia() {
-        return tipologia;
-    }
-
-    public String getCodiceNUTS1() {
-        return codiceNUTS1;
-    }
-
-    public String getCodiceNUTS2() {
-        return codiceNUTS2;
-    }
-
-    public Integer getCodiceRegioneISTAT() {
-        return codiceRegioneISTAT;
-    }
-
     public String getNomeRegione() {
         return nomeRegione;
+    }
+
+    public static JavaRDD<PuntiSomministrazioneTipologia> getInstance(JavaRDD<Row> dataset) {
+        return
+                dataset.map(
+                        line -> new PuntiSomministrazioneTipologia(
+                                line.getString(0),
+                                line.getString(1),
+                                line.getString(2),
+                                line.getString(3),
+                                line.getString(4),
+                                Integer.parseInt(line.getString(5)),
+                                line.getString(6)
+                        ))
+                        .filter(p -> p != null);
     }
 
     @Override

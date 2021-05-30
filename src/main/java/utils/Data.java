@@ -13,22 +13,6 @@ public class Data {
     }
 
     /**
-     * Metodo che prende mese corrente
-     *
-     * @param date:
-     * @return :
-     * @throws ParseException :
-     */
-    public static Calendar getMonth(String date) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(YEAR_MONTH_FORMAT);
-        Date dateNextMonth = dateFormat.parse(date);
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(dateNextMonth);
-        return cal;
-    }
-
-    /**
      * Metodo che prende il primo giorno del mese successivo
      *
      * @param date:
