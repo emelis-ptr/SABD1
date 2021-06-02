@@ -34,15 +34,21 @@ public class QueryTwo {
     private static final String PATH_HDFS = HadoopConfig.getPathHDFS();
 
     /**
-     * Query two
+     ** Query two **
+     * Per le donne, per ogni fascia anagrafica e per ogni mese solare,
+     * determinare le prime 5 aree per le quali è previsto il maggior numero di vaccinazioni il primo giorno del mese successivo.
+     * Per determinare la classifica mensile e prevedere il numero di vaccinazioni,
+     * considerare la retta di regressione che approssima l’andamento delle vaccinazioni giornaliere.
+     * Per la risoluzione della query, considerare le sole categorie per cui nel mese solare in esame vengono registrati
+     * almeno due giorni di campagna vaccinale.
+     * Viene inoltre richiesto di calcolare la classifica per ogni mese e categoria a partire dai dati raccolti dall’1 Febbraio 2021.
      *
      * @param sc:
      * @param spark:
-     * @throws ParseException:
      */
-    public static void queryTwo(JavaSparkContext sc, SparkSession spark) throws ParseException {
+    public static void queryTwo(JavaSparkContext sc, SparkSession spark){
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
-        JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData = initialData(spark, sc);
+        JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData = initialData(spark);
 
         //conta per ogni key il numero di giorni in cui sono stati effettutati i vaccini
         //Data(anno-mese), area, fascia_anagrafica -- numDaysToMonth
@@ -53,36 +59,20 @@ public class QueryTwo {
         Broadcast<List<Tuple3<String, String, String>>> filterKeyMinor2 = filterNumDayMinor2(sc, countNumDays);
         //filter
         initialData = initialData.filter(x -> !filterKeyMinor2.value().contains(x._1));
-        //groupByKey
+
         // Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
         JavaPairRDD<Tuple3<String, String, String>, Iterable<Tuple2<Date, Integer>>> groupInitData = initialData
                 .groupByKey()
                 .sortByKey(new ComparatorTuple.Tuple3ComparatorString(), true);
 
-        JavaPairRDD<Tuple3<Date, String, Double>, String> simpleRegression = simpleRegression(groupInitData);
+        //Data, fascia-anagrafica, simpleRegression -- area
+        JavaPairRDD<Tuple3<Date, String, Double>,  String> simpleRegression = simpleRegression(groupInitData);
 
-        //data, fascia-anagrafica -- area, predizione
-        JavaPairRDD<Tuple2<Date, String>, Tuple2<String, Double>> rank = simpleRegression
-                .mapToPair(line -> new Tuple2<>(new Tuple2<>(line._1._1(), line._1._2()), new Tuple2<>(line._2, line._1._3())))
-                .groupByKey()
-                .flatMapToPair(
-                        row -> {
-                            List<Tuple2<String, Double>> tuple2 = IteratorUtils.toList(row._2.iterator());
-                            List<Tuple2<Tuple2<Date, String>, Tuple2<String, Double>>> list = new ArrayList<>();
-
-                            for (Tuple2<String, Double> tuple : tuple2) {
-                                list.add(new Tuple2<>(new Tuple2<>(row._1._1(), row._1._2()), new Tuple2<>(tuple._1, tuple._2)));
-                            }
-
-                            return list.stream().limit(5).iterator();
-                        }
-                ).sortByKey(new ComparatorTuple.Tuple2ComparatorDateString(), true);
-
-        Dataset<Row> createSchema = Schema.createSchemaQuery3(spark, rank);
+        Dataset<Row> createSchema = Schema.createSchemaQuery3(spark, simpleRegression);
         createSchema.show(50);
         createSchema.coalesce(1).write().mode(SaveMode.Overwrite).option(HEADER, true).format(CSV_FORMAT).save(RES_DIR_QUERY2);
         createSchema.coalesce(1).write().mode(SaveMode.Overwrite).option(HEADER, true).format(CSV_FORMAT).save(PATH_HDFS + DIR_HDFS + RES_DIR_QUERY2);
-    }
+   }
 
     /**
      * Metodo che predice il numero di vaccini del primo giorno del mese successivo
@@ -91,28 +81,36 @@ public class QueryTwo {
      * @param lines:
      * @return :
      */
-    public static JavaPairRDD<Tuple3<Date, String, Double>, String> simpleRegression(JavaPairRDD<Tuple3<String, String, String>, Iterable<Tuple2<Date, Integer>>> lines) {
-        SimpleRegression regression = new SimpleRegression();
+    public static JavaPairRDD<Tuple3<Date, String, Double>,  String> simpleRegression(JavaPairRDD<Tuple3<String, String, String>, Iterable<Tuple2<Date, Integer>>> lines) {
 
-        JavaPairRDD<Tuple3<String, String, String>, SimpleRegression> map = lines
-                .flatMapToPair(line -> {
-                    List<Tuple2<Tuple3<String, String, String>, SimpleRegression>> list = new ArrayList<>();
-
+        //Data, fascia-anagrafica, simpleRegression -- area
+        return lines
+                //anno-mese, fascia-anagrafica -- prediction, area
+                .mapToPair( line -> { // Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
+                    SimpleRegression regression = new SimpleRegression();
                     for (Tuple2<Date, Integer> en : line._2) {
                         regression.addData((double) en._1.getTime(), (double) en._2);
-                        list.add(new Tuple2<>(line._1, regression));
                     }
 
-                    return list.stream().iterator();
+                    Date nextMonth = Data.getNextMonth(line._1._1()).getTime();
+                    double predictedVaccinations = regression.predict((double) (nextMonth).getTime());
 
-                });
+                    return new Tuple2<>(new Tuple2<>(nextMonth, line._1._3()), new Tuple2<>(predictedVaccinations, line._1._2()));
+                })
+                .groupByKey()
+                .sortByKey(new ComparatorTuple.Tuple2ComparatorDateString())
+                .flatMapToPair(
+                        line -> {
+                            List<Tuple2<Double, String>> list = IteratorUtils.toList(line._2.iterator());
+                            list.sort(Collections.reverseOrder(Comparator.comparing(o -> o._1)));
 
-        return map.mapToPair(record -> {
-            Date nextMonth2 = Data.getNextMonth(record._1._1()).getTime();
-            double predictedVaccinations = record._2.predict((double) (nextMonth2).getTime());
+                            List<Tuple2<Tuple3<Date, String, Double>, String>> topFive = new ArrayList<>();
 
-            return new Tuple2<>(new Tuple3<>(nextMonth2, record._1._3(), predictedVaccinations), record._1._2());
-        }).distinct().sortByKey(new ComparatorTuple.Tuple3ComparatorDateStringDouble(), true);
+                            for(Tuple2<Double, String> tuple2: list){
+                                topFive.add(new Tuple2<>(new Tuple3<>(line._1._1, line._1._2, tuple2._1), tuple2._2));
+                            }
+                            return topFive.stream().limit(5).iterator();
+                        });
     }
 
     /**
@@ -122,8 +120,8 @@ public class QueryTwo {
      * @param sc:
      * @return :
      */
-    private static JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData(SparkSession sparkSession, JavaSparkContext sc) {
-        JavaRDD<Tuple4<String, String, String, Integer>> svl = initialDataSVL(sparkSession, sc);
+    private static JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData(SparkSession sparkSession) {
+        JavaRDD<Tuple4<String, String, String, Integer>> svl = initialDataSVL(sparkSession);
 
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
         return svl
@@ -193,26 +191,30 @@ public class QueryTwo {
      * @param sc:
      * @return :
      */
-    public static JavaRDD<Tuple4<String, String, String, Integer>> initialDataSVL(SparkSession sparkSession, JavaSparkContext sc) {
+    public static JavaRDD<Tuple4<String, String, String, Integer>> initialDataSVL(SparkSession sparkSession) {
+        /*
         JavaRDD<String> svlFile = sc
                 .textFile(PATH_SVL)
-                .sortBy(arg0 -> arg0.split(SPLIT_COMMA)[0], true, 10);
+                .sortBy(arg0 -> arg0.split(SPLIT_COMMA)[0], true, 10);   // Prende il file di testo dalla cartella del progetto
+        */
 
         JavaRDD<Row> dataset = sparkSession.read()
                 .option("header", true)
-                .csv(PATH_HDFS + "/sabd/" + PATH_SVL)
+                .csv(PATH_HDFS + DIR_HDFS + PATH_SVL)
                 .javaRDD();
 
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
         JavaRDD<SomministrazioniVacciniLatest> somministrazioniVacciniLatestJavaRDD = SomministrazioniVacciniLatest.getInstance(dataset);
 
 
-        /*if (somministrazioniVacciniLatestJavaRDD.isEmpty()) {
+        /**
+        if (somministrazioniVacciniLatestJavaRDD.isEmpty()) {
             somministrazioniVacciniLatestJavaRDD =
                     svlFile.map(
                             ParseCSV::parseCsvSVL)
                             .filter(Objects::nonNull);
-        }*/
+        }
+        */
 
         return somministrazioniVacciniLatestJavaRDD.map(x -> new Tuple4<>(x.getDataSomministrazione(), x.getNomeArea(), x.getFasciaAnagrafica(), x.getSessoFemminile()));
     }

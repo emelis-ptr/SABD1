@@ -10,7 +10,8 @@ public class Constants {
     public static final String PATH_SVSL = "data/somministrazioni-vaccini-summary-latest.csv";
 
     public static final String IGNORE_DATE_BEFORE = "2021-02-01";
-    public static final String IGNORE_MONTH = "12";
+    public static final String IGNORE_MONTH = "2020-12";
+    public static final String IGNORE_MONTH2 = "2021-6";
 
     public static final String DATE_WITH_DASHES = "yyyy-MM-dd";
     public static final String DATE_NO_DASHES = "yyyyMMdd";

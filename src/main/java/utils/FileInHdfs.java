@@ -23,9 +23,10 @@ public class FileInHdfs {
 
         for (String file : pathFiles) {
             Path hdfsPath = new Path(DIR_HDFS + file);
+            File fileLocal = new File(file);
 
             try {
-                if (!fileSystem.exists(hdfsPath)) {
+                if (!fileSystem.exists(hdfsPath) || fileSystem.getFileStatus(hdfsPath).getModificationTime() < fileLocal.lastModified()) {
                     fileSystem.create(hdfsPath, true);
                     fileSystem.copyFromLocalFile(new Path(file), hdfsPath);
                 }

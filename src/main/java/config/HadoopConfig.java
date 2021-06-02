@@ -36,7 +36,7 @@ public class HadoopConfig {
     }
 
     /**
-     * @return
+     * @return :
      */
     public static String getPathHDFS() {
         Configuration configuration = getConfigHDFS();
