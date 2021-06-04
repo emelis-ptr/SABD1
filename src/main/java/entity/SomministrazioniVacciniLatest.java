@@ -1,7 +1,6 @@
 package entity;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Row;
 
 import java.util.Objects;
 
@@ -12,17 +11,7 @@ public class SomministrazioniVacciniLatest {
     private final String area;                    //Sigla della regione di consegna
     private final String fasciaAnagrafica;       //Fascia anagrafica a cui appartengono i soggetti a cui è stato somministrato il vaccino
     private final Integer sessoMaschile;         //Totale dei soggetti di sesso maschile a cui è stato somministrato il vaccino
-    private final Integer sessoFemminile;        //Totale dei soggetti di sesso femminile a cui è stato somministrato il vaccino
-    /*private final Integer categoriaOperatoriSanitariSociosanitari;     //Numero di somministrazioni effettuate agli operatori sanitari e sociosanitari
-    private final Integer categoriaPersonaleNonSanitario;              //Numero di somministrazioni effettuate al personale non sanitario impiegato in strutture sanitarie e in attività lavorativa a rischio
-    private final Integer categoriaOspitiRsa;   //Numero di somministrazioni effettuate ai soggetti ospiti di comunitàresidenziali indicate per giorno, regione e fascia d’età
-    private final Integer categoria6069;        //Numero somministrazioni effettuate ai soggetti con età anagrafica compresa tra 60 e 69 anni, non appartenenti ad altre categorie prioritarie
-    private final Integer categoria7079;         //Numero somministrazioni effettuate ai soggetti con età anagrafica compresa tra 70 e 79 anni, non appartenenti ad altre categorie prioritarie
-    private final Integer categoriaOver80;       //Numero somministrazioni effettuate ai soggetti con età anagrafica maggiore o uguale a 80 anni, non appartenenti ad altre categorie prioritarie
-    private final Integer categoriaForzeArmate; //Numero di somministrazioni effettuate al personale del comparto difesa e sicurezza
-    private final Integer categoriaPersonaleScolastico;     //Numero di somministrazioni effettuate al personale scolastico
-    private final Integer categoriaSoggettiFragili;         //Numero di somministrazioni effettuate ai soggetti fragili e loro caregiver
-    private final Integer categoriaAltro;              */      //Numero di somministrazioni effettuate ai soggetti non riconducibili alle precedenti categorie
+    private final Integer sessoFemminile;
     private final Integer primaDose;                         //Numero prime somministrazioni
     private final Integer secondaDose;                       //Numero seconde somministrazioni
     private final String codiceNUTS1;                        //Classificazione europea delle unità territoriali NUTS: livello NUTS 1
@@ -61,33 +50,27 @@ public class SomministrazioniVacciniLatest {
         return nomeArea;
     }
 
-    public static JavaRDD<SomministrazioniVacciniLatest> getInstance(JavaRDD<Row> dataset){
+    public static JavaRDD<SomministrazioniVacciniLatest> getInstance(JavaRDD<String> dataset) {
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
         return
                 dataset.map(
-                        line -> new SomministrazioniVacciniLatest(
-                            line.getString(0),
-                            line.getString(1),
-                            line.getString(2),
-                            line.getString(3),
-                            Integer.valueOf(line.getString(4)),
-                            Integer.valueOf(line.getString(5)),
-                            /*Integer.valueOf(line.getString(6)),
-                            Integer.valueOf(line.getString(7)),
-                            Integer.valueOf(line.getString(8)),
-                            Integer.valueOf(line.getString(9)),
-                            Integer.valueOf(line.getString(10)),
-                            Integer.valueOf(line.getString(11)),
-                            Integer.valueOf(line.getString(12)),
-                            Integer.valueOf(line.getString(13)),
-                            Integer.valueOf(line.getString(14)),
-                            Integer.valueOf(line.getString(15)),*/
-                            Integer.valueOf(line.getString(6)),
-                            Integer.valueOf(line.getString(7)),
-                            line.getString(8),
-                            line.getString(9),
-                            Integer.valueOf(line.getString(10)),
-                            line.getString(11)))
+                        line ->
+                        {
+                            String[] split = line.split(",");
+                            return new SomministrazioniVacciniLatest(
+                                    split[0],
+                                    split[1],
+                                    split[2],
+                                    split[3],
+                                    Integer.valueOf(split[4]),
+                                    Integer.valueOf(split[5]),
+                                    Integer.valueOf(split[6]),
+                                    Integer.valueOf(split[7]),
+                                    split[8],
+                                    split[9],
+                                    Integer.valueOf(split[10]),
+                                    split[11]);
+                        })
                         .filter(Objects::nonNull);
     }
 
@@ -100,16 +83,6 @@ public class SomministrazioniVacciniLatest {
                 ", fascia_anagrafica='" + fasciaAnagrafica + '\'' +
                 ", sesso_maschile=" + sessoMaschile +
                 ", sesso_femminile=" + sessoFemminile +
-               /* ", categoria_operatori_sanitari_sociosanitari=" + categoriaOperatoriSanitariSociosanitari +
-                ", categoria_personale_non_sanitario=" + categoriaPersonaleNonSanitario +
-                ", categoria_ospiti_rsa=" + categoriaOspitiRsa +
-                ", categoria_60_69=" + categoria6069 +
-                ", categoria70_79=" + categoria7079 +
-                ", categoria_over80=" + categoriaOver80 +
-                ", categoria_forze_armate=" + categoriaForzeArmate +
-                ", categoria_personale_scolastico=" + categoriaPersonaleScolastico +
-                ", categoria_soggetti_fragili=" + categoriaSoggettiFragili +
-                ", categoria_altro=" + categoriaAltro +*/
                 ", prima_dose=" + primaDose +
                 ", seconda_dose=" + secondaDose +
                 ", codice_NUTS1='" + codiceNUTS1 + '\'' +

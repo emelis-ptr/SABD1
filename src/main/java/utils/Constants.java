@@ -25,6 +25,7 @@ public class Constants {
     public static final String RES_DIR_QUERY1 = "result/queryOne";
 
     public static final String DIR_HDFS = "/sabd/";
+    public static final String PATH_HDFS = "hdfs://hdfs-namenode:9000";
 
     public static final String HEADER = "header";
 }

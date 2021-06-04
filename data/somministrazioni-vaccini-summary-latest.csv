@@ -1,4 +1,3 @@
-data_somministrazione,area,totale,sesso_maschile,sesso_femminile,prima_dose,seconda_dose,codice_NUTS1,codice_NUTS2,codice_regione_ISTAT,nome_area
 2021-06-01,PUG,9356,4668,4688,6102,3254,ITF,ITF4,16,Puglia
 2021-01-18,CAM,957,399,558,713,244,ITF,ITF3,15,Campania
 2021-02-24,BAS,1803,743,1060,1734,69,ITF,ITF5,17,Basilicata

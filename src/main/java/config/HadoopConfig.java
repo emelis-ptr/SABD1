@@ -31,7 +31,7 @@ public class HadoopConfig {
      */
     public static Configuration getConfigHDFS() {
         Configuration configuration = new Configuration();
-        configuration.set("fs.defaultFS", "hdfs://localhost:9000");
+        configuration.set("fs.defaultFS", "hdfs://hdfs-namenode:9000");
         return configuration;
     }
 

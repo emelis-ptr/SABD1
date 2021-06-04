@@ -1,0 +1,85 @@
+version: '2'
+
+services:
+
+  # SPARK ----------------------------------------------------------------------------------------------------------------
+
+  spark:
+    image: docker.io/bitnami/spark:3
+    container_name: spark-master
+    restart: always
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - '8080:8080' # Web ui port
+      - '7077:7077'
+      - "4040:4040" #Application ui port
+    volumes:
+      - ./data/spark_data:/spark_data
+
+  spark-worker:
+    image: docker.io/bitnami/spark:3
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    depends_on:
+      - spark
+
+  # HDFS -----------------------------------------------------------------------------------------------------------------
+
+  hdfs-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hdfs-namenode
+    restart: always
+    environment:
+      - CLUSTER_NAME=test
+      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
+      - HDFS_CONF_dfs_permissions_enabled=false
+      - HDFS_CONF_dfs_replication=1
+    ports:
+      - '9870:9870' # Web ui port
+      - '9000:9000'
+
+  hdfs-datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    restart: always
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:9000
+    depends_on:
+      - hdfs-namenode
+
+  # NIFI -----------------------------------------------------------------------------------------------------------------
+
+#nifi:
+  #    image: apache/nifi
+  #    container_name: nifi
+  #    ports:
+  #      - '9090:8080' # Web ui port
+  #    volumes:
+  #      - ./nifi:/nifi_config/
+  #      - nifi_volume:/opt/nifi/nifi-current/conf/
+  #
+  #
+  #volumes:
+  #  nifi_volume:
+  #hbase-docker:
+      #    image: harisekhon/hbase:1.4
+      #    networks:
+      #      - spark-net
+      #    ports:
+      #      - '2181:2181'
+      #      - '8082:8080'
+      #      - '8085:8085'
+      #      - '16000:16000'
+      #    volumes:
+      #      - ./hbase/conf:/hbase-1.4.7/conf

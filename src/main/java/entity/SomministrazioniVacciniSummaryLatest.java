@@ -1,7 +1,6 @@
 package entity;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Row;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -19,16 +18,7 @@ public class SomministrazioniVacciniSummaryLatest implements Serializable {
     private final Integer totale;                 //Numero totale di dosi di vaccino somministrate
     private final Integer sessoMaschile;         //Totale dei soggetti di sesso maschile a cui è stato somministrato il vaccino
     private final Integer sessoFemminile;        //Totale dei soggetti di sesso femminile a cui è stato somministrato il vaccino/* private final Integer categoriaOperatoriSanitariSociosanitari;     //Numero di somministrazioni effettuate agli operatori sanitari e sociosanitari
- /*   private final Integer categoriaPersonaleNonSanitario;              //Numero di somministrazioni effettuate al personale non sanitario impiegato in strutture sanitarie e in attività lavorativa a rischio
-    private final Integer categoriaOspitiRsa;   //Numero di somministrazioni effettuate ai soggetti ospiti di comunitàresidenziali indicate per giorno, regione e fascia d’età
-    private final Integer categoriaPersonaleScolastico;     //Numero di somministrazioni effettuate al personale scolastico
-    private final Integer categoria6069;        //Numero somministrazioni effettuate ai soggetti con età anagrafica compresa tra 60 e 69 anni, non appartenenti ad altre categorie prioritarie
-    private final Integer categoria7079;         //Numero somministrazioni effettuate ai soggetti con età anagrafica compresa tra 70 e 79 anni, non appartenenti ad altre categorie prioritarie
-    private final Integer categoriaOver80;       //Numero somministrazioni effettuate ai soggetti con età anagrafica maggiore o uguale a 80 anni, non appartenenti ad altre categorie prioritarie
-    private final Integer categoriaSoggettiFragili;         //Numero di somministrazioni effettuate ai soggetti fragili e loro caregiver
-    private final Integer categoriaForzeArmate; //Numero di somministrazioni effettuate al personale del comparto difesa e sicurezza
-    private final Integer categoriaAltro;                  //Numero di somministrazioni effettuate ai soggetti non riconducibili alle precedenti categorie  */
-   private final Integer primaDose;                         //Numero prime somministrazioni
+    private final Integer primaDose;                         //Numero prime somministrazioni
     private final Integer secondaDose;                       //Numero seconde somministrazioni
     private final String codiceNUTS1;                        //Classificazione europea delle unità territoriali NUTS: livello NUTS 1
     private final String codiceNUTS2;                        //Classificazione europea delle unità territoriali NUTS: livello NUTS 2
@@ -60,7 +50,7 @@ public class SomministrazioniVacciniSummaryLatest implements Serializable {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date1);
             int m = cal.get(Calendar.MONTH) + 1;
-            month =cal.get(Calendar.YEAR) + "-" + m;
+            month = cal.get(Calendar.YEAR) + "-" + m;
 
         } catch (ParseException e) {
             e.printStackTrace();
@@ -77,32 +67,26 @@ public class SomministrazioniVacciniSummaryLatest implements Serializable {
         return nomeArea;
     }
 
-    public static JavaRDD<SomministrazioniVacciniSummaryLatest> getInstance(JavaRDD<Row> dataset) {
+    public static JavaRDD<SomministrazioniVacciniSummaryLatest> getInstance(JavaRDD<String> dataset) {
         return
                 dataset.map(
-                        line -> new SomministrazioniVacciniSummaryLatest(
-                                line.getString(0),
-                                line.getString(1),
-                                Integer.valueOf(line.getString(2)),
-                                Integer.valueOf(line.getString(3)),
-                                Integer.valueOf(line.getString(4)),
-                                Integer.valueOf(line.getString(5)),
-                                Integer.valueOf(line.getString(6)),
-                                /*Integer.valueOf(line.getString(7)),
-                                Integer.valueOf(line.getString(8)),
-                                Integer.valueOf(line.getString(9)),
-                                Integer.valueOf(line.getString(10)),
-                                Integer.valueOf(line.getString(11)),
-                                Integer.valueOf(line.getString(12)),
-                                Integer.valueOf(line.getString(13)),
-                                Integer.valueOf(line.getString(14)),
-                                Integer.valueOf(line.getString(15)),
-                                Integer.valueOf(line.getString(16)),*/
-                                line.getString(7),
-                                line.getString(8),
-                                Integer.valueOf(line.getString(9)),
-                                line.getString(10)
-                        )).filter(Objects::nonNull);
+                        line -> {
+                            String[] split = line.split(",");
+                            return new SomministrazioniVacciniSummaryLatest(
+                                    split[0],
+                                    split[1],
+                                    Integer.valueOf(split[2]),
+                                    Integer.valueOf(split[3]),
+                                    Integer.valueOf(split[4]),
+                                    Integer.valueOf(split[5]),
+                                    Integer.valueOf(split[6]),
+                                    split[7],
+                                    split[8],
+                                    Integer.valueOf(split[9]),
+                                    split[10]
+
+                            );
+                        }).filter(Objects::nonNull);
     }
 
     @Override
@@ -113,16 +97,6 @@ public class SomministrazioniVacciniSummaryLatest implements Serializable {
                 ", totale=" + totale +
                 ", sesso_maschile=" + sessoMaschile +
                 ", sesso_femminile=" + sessoFemminile +
-               /* ", categoria_operatori_sanitari_sociosanitari=" + categoriaOperatoriSanitariSociosanitari +
-                ", categoria_personale_non_sanitario=" + categoriaPersonaleNonSanitario +
-                ", categoria_ospiti_rsa=" + categoriaOspitiRsa +
-                ", categoria_personale_scolastico=" + categoriaPersonaleScolastico +
-                ", categoria_60_69=" + categoria6069 +
-                ", categoria70_79=" + categoria7079 +
-                ", categoria_over80=" + categoriaOver80 +
-                ", categoria_soggetti_fragili=" + categoriaSoggettiFragili +
-                ", categoria_forze_armate=" + categoriaForzeArmate +
-                ", categoria_altro=" + categoriaAltro +*/
                 ", prima_dose=" + primaDose +
                 ", seconda_dose=" + secondaDose +
                 ", codice_NUTS1='" + codiceNUTS1 + '\'' +

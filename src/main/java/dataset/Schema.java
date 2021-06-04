@@ -2,16 +2,14 @@ package dataset;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
 import scala.Tuple3;
-import utils.Data;
+import utils.Utils;
 
 import java.util.*;
 
@@ -23,12 +21,12 @@ public class Schema {
     /**
      * Metodo che crea un dataset
      *
-     * @param spark:
+     * @param sc:
      * @param values:
      * @return :
      */
-    public static Dataset<Row> createSchemaFinalQuery1(SparkSession spark, JavaPairRDD<String, Tuple2<String, Float>> values) {
-
+    public static Dataset<Row> createSchemaFinalQuery1(JavaSparkContext sc, JavaPairRDD<String, Tuple2<String, Float>> values) {
+        SQLContext sqlContext = new SQLContext(sc);
         // Generate the schema based on the string of schema
         List<StructField> fields = new ArrayList<>();
         fields.add(DataTypes.createStructField("mese", DataTypes.StringType, true));
@@ -40,25 +38,25 @@ public class Schema {
         JavaRDD<Row> rowRDD = values.map(
                 val ->
                 {
-                    Calendar cal = Data.getMonthFromString(val._1);
+                    Calendar cal = Utils.getMonthFromString(val._1);
                     String month = cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ITALIAN);
                     String monthUpper = month.substring(0, 1).toUpperCase() + "" + month.substring(1);
                     return RowFactory.create(monthUpper, val._2._1, val._2._2);
                 }
         );
         // Apply the schema to the RDD
-        return spark.createDataFrame(rowRDD, schema);
+        return sqlContext.createDataFrame(rowRDD, schema);
     }
 
     /**
      * Metodo che crea un dataset
      *
-     * @param spark:
+     * @param sc:
      * @param values:
      * @return :
      */
-    public static Dataset<Row> createSchemaQuery3(SparkSession spark, JavaPairRDD<Tuple3<Date, String, Double>,  String> values) {
-
+    public static Dataset<Row> createSchemaQuery3(JavaSparkContext sc, JavaPairRDD<Tuple3<Date, String, Double>, String> values) {
+        SQLContext sqlContext = new SQLContext(sc);
         // Generate the schema based on the string of schema
         List<StructField> fields = new ArrayList<>();
         fields.add(DataTypes.createStructField("mese", DataTypes.StringType, true));
@@ -81,7 +79,7 @@ public class Schema {
                 }
         );
         // Apply the schema to the RDD
-        return spark.createDataFrame(rowRDD, schema);
+        return sqlContext.createDataFrame(rowRDD, schema);
     }
 
 }

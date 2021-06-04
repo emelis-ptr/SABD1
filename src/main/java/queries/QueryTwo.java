@@ -1,6 +1,5 @@
 package queries;
 
-import config.HadoopConfig;
 import dataset.Schema;
 import entity.SomministrazioniVacciniLatest;
 import org.apache.commons.collections.IteratorUtils;
@@ -14,7 +13,7 @@ import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
 import utils.ComparatorTuple;
-import utils.Data;
+import utils.Utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,8 +30,6 @@ public class QueryTwo {
     private QueryTwo() {
     }
 
-    private static final String PATH_HDFS = HadoopConfig.getPathHDFS();
-
     /**
      ** Query two **
      * Per le donne, per ogni fascia anagrafica e per ogni mese solare,
@@ -44,11 +41,10 @@ public class QueryTwo {
      * Viene inoltre richiesto di calcolare la classifica per ogni mese e categoria a partire dai dati raccolti dall’1 Febbraio 2021.
      *
      * @param sc:
-     * @param spark:
      */
-    public static void queryTwo(JavaSparkContext sc, SparkSession spark){
+    public static void queryTwo(JavaSparkContext sc){
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
-        JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData = initialData(spark);
+        JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData = initialData(sc);
 
         //conta per ogni key il numero di giorni in cui sono stati effettutati i vaccini
         //Data(anno-mese), area, fascia_anagrafica -- numDaysToMonth
@@ -68,10 +64,10 @@ public class QueryTwo {
         //Data, fascia-anagrafica, simpleRegression -- area
         JavaPairRDD<Tuple3<Date, String, Double>,  String> simpleRegression = simpleRegression(groupInitData);
 
-        Dataset<Row> createSchema = Schema.createSchemaQuery3(spark, simpleRegression);
+        Dataset<Row> createSchema = Schema.createSchemaQuery3(sc, simpleRegression);
+        createSchema.coalesce(1).write().mode(SaveMode.Overwrite).option(HEADER, true).format(CSV_FORMAT).save("hdfs://hdfs-namenode:9000/results/queryTwo/");
+
         createSchema.show(50);
-        createSchema.coalesce(1).write().mode(SaveMode.Overwrite).option(HEADER, true).format(CSV_FORMAT).save(RES_DIR_QUERY2);
-        createSchema.coalesce(1).write().mode(SaveMode.Overwrite).option(HEADER, true).format(CSV_FORMAT).save(PATH_HDFS + DIR_HDFS + RES_DIR_QUERY2);
    }
 
     /**
@@ -92,7 +88,7 @@ public class QueryTwo {
                         regression.addData((double) en._1.getTime(), (double) en._2);
                     }
 
-                    Date nextMonth = Data.getNextMonth(line._1._1()).getTime();
+                    Date nextMonth = Utils.getNextMonth(line._1._1()).getTime();
                     double predictedVaccinations = regression.predict((double) (nextMonth).getTime());
 
                     return new Tuple2<>(new Tuple2<>(nextMonth, line._1._3()), new Tuple2<>(predictedVaccinations, line._1._2()));
@@ -117,11 +113,10 @@ public class QueryTwo {
      * Metodo che restituisce una coppia:
      * Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
      *
-     * @param sc:
      * @return :
      */
-    private static JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData(SparkSession sparkSession) {
-        JavaRDD<Tuple4<String, String, String, Integer>> svl = initialDataSVL(sparkSession);
+    private static JavaPairRDD<Tuple3<String, String, String>, Tuple2<Date, Integer>> initialData(JavaSparkContext sc) {
+        JavaRDD<Tuple4<String, String, String, Integer>> svl = initialDataSVL(sc);
 
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
         return svl
@@ -191,30 +186,13 @@ public class QueryTwo {
      * @param sc:
      * @return :
      */
-    public static JavaRDD<Tuple4<String, String, String, Integer>> initialDataSVL(SparkSession sparkSession) {
-        /*
+    public static JavaRDD<Tuple4<String, String, String, Integer>> initialDataSVL(JavaSparkContext sc) {
         JavaRDD<String> svlFile = sc
-                .textFile(PATH_SVL)
-                .sortBy(arg0 -> arg0.split(SPLIT_COMMA)[0], true, 10);   // Prende il file di testo dalla cartella del progetto
-        */
-
-        JavaRDD<Row> dataset = sparkSession.read()
-                .option("header", true)
-                .csv(PATH_HDFS + DIR_HDFS + PATH_SVL)
-                .javaRDD();
+                .textFile("hdfs://hdfs-namenode:9000/data/data/somministrazioni-vaccini-latest.csv")
+                .sortBy(arg0 -> arg0.split(SPLIT_COMMA)[0], true, 10);
 
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile
-        JavaRDD<SomministrazioniVacciniLatest> somministrazioniVacciniLatestJavaRDD = SomministrazioniVacciniLatest.getInstance(dataset);
-
-
-        /**
-        if (somministrazioniVacciniLatestJavaRDD.isEmpty()) {
-            somministrazioniVacciniLatestJavaRDD =
-                    svlFile.map(
-                            ParseCSV::parseCsvSVL)
-                            .filter(Objects::nonNull);
-        }
-        */
+        JavaRDD<SomministrazioniVacciniLatest> somministrazioniVacciniLatestJavaRDD = SomministrazioniVacciniLatest.getInstance(svlFile);
 
         return somministrazioniVacciniLatestJavaRDD.map(x -> new Tuple4<>(x.getDataSomministrazione(), x.getNomeArea(), x.getFasciaAnagrafica(), x.getSessoFemminile()));
     }

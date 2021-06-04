@@ -1,7 +1,6 @@
 package entity;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Row;
 
 import java.io.Serializable;
 
@@ -37,18 +36,21 @@ public class PuntiSomministrazioneTipologia implements Serializable {
         return nomeRegione;
     }
 
-    public static JavaRDD<PuntiSomministrazioneTipologia> getInstance(JavaRDD<Row> dataset) {
+    public static JavaRDD<PuntiSomministrazioneTipologia> getInstance(JavaRDD<String> dataset) {
         return
                 dataset.map(
-                        line -> new PuntiSomministrazioneTipologia(
-                                line.getString(0),
-                                line.getString(1),
-                                line.getString(2),
-                                line.getString(3),
-                                line.getString(4),
-                                Integer.parseInt(line.getString(5)),
-                                line.getString(6)
-                        ))
+                        line ->
+                        {
+                            String[] split = line.split(",");
+                            return new PuntiSomministrazioneTipologia(
+                                split[0],
+                                split[1],
+                                split[2],
+                                split[3],
+                                split[4],
+                                Integer.parseInt(split[5]),
+                                split[6]
+                        );})
                         .filter(p -> p != null);
     }
 

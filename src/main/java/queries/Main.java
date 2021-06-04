@@ -1,33 +1,33 @@
 package queries;
 
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SparkSession;
-import utils.FileInHdfs;
-import utils.LogFile;
 import config.SparkConfig;
-import utils.RenameFile;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
+import utils.LogFile;
 
 public class Main {
 
     public static void main(String[] args) {
         //LogFile.setupLogger();  //Log
 
-        SparkSession sparkSession = SparkConfig.sparkSession();
-        JavaSparkContext sc = JavaSparkContext.fromSparkContext(sparkSession.sparkContext());
-
-        FileInHdfs.copyFileToHDFS();
+        SparkConf conf = SparkConfig.sparkConfig();
+        JavaSparkContext sc = new JavaSparkContext(conf);
 
         long start = System.nanoTime();
 
-        QueryOne.queryOne(sparkSession, sc);
-        QueryTwo.queryTwo(sc, sparkSession);
+        QueryOne.queryOne(sc);
+
+        long endQueryOne = System.nanoTime();
+        long startQueryTwo = System.nanoTime();
+
+        QueryTwo.queryTwo(sc);
 
         long end = System.nanoTime();
+
+        LogFile.infoLog("Query One processed in : " + (int) (endQueryOne - start) / 1000000 + " ms");
+        LogFile.infoLog("Query Two processed in : " + (int) (end - startQueryTwo) / 1000000 + " ms");
         LogFile.infoLog("Processed in : " + (int) (end - start) / 1000000 + " ms");
 
         sc.close();
-        sparkSession.close();
-
-        RenameFile.renameFile();
     }
 }
