@@ -73,22 +73,4 @@ public class SomministrazioniVacciniLatest {
                         })
                         .filter(Objects::nonNull);
     }
-
-    @Override
-    public String toString() {
-        return "SomministazioniVacciniLatest{" +
-                ", data_somministrazione=" + dataSomministrazione +
-                ", fornitore='" + fornitore + '\'' +
-                ", area='" + area + '\'' +
-                ", fascia_anagrafica='" + fasciaAnagrafica + '\'' +
-                ", sesso_maschile=" + sessoMaschile +
-                ", sesso_femminile=" + sessoFemminile +
-                ", prima_dose=" + primaDose +
-                ", seconda_dose=" + secondaDose +
-                ", codice_NUTS1='" + codiceNUTS1 + '\'' +
-                ", codice_NUTS2='" + codiceNUTS2 + '\'' +
-                ", codice_regione_ISTAT=" + codiceRegioneISTAT +
-                ", nome_area='" + nomeArea + '\'' +
-                '}';
-    }
 }

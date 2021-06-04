@@ -53,17 +53,4 @@ public class PuntiSomministrazioneTipologia implements Serializable {
                         );})
                         .filter(p -> p != null);
     }
-
-    @Override
-    public String toString() {
-        return "PuntiSomministrazioneTipologia{" +
-                ", area='" + area + '\'' +
-                ", denominazione_struttura='" + denominazioneStruttura + '\'' +
-                ", tipologia='" + tipologia + '\'' +
-                ", codice_NUTS1='" + codiceNUTS1 + '\'' +
-                ", getCodice_NUTS2='" + codiceNUTS2 + '\'' +
-                ", codice_regione_ISTAT=" + codiceRegioneISTAT +
-                ", nome_regione='" + nomeRegione + '\'' +
-                '}';
-    }
 }

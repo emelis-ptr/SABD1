@@ -88,21 +88,4 @@ public class SomministrazioniVacciniSummaryLatest implements Serializable {
                             );
                         }).filter(Objects::nonNull);
     }
-
-    @Override
-    public String toString() {
-        return "SomministrazioniVacciniSummaryLatest{" +
-                "data_somministrazione=" + dataSomministrazione +
-                ", area='" + area + '\'' +
-                ", totale=" + totale +
-                ", sesso_maschile=" + sessoMaschile +
-                ", sesso_femminile=" + sessoFemminile +
-                ", prima_dose=" + primaDose +
-                ", seconda_dose=" + secondaDose +
-                ", codice_NUTS1='" + codiceNUTS1 + '\'' +
-                ", codice_NUTS2='" + codiceNUTS2 + '\'' +
-                ", codice_regione_ISTAT=" + codiceRegioneISTAT +
-                ", nome_area='" + nomeArea + '\'' +
-                '}';
-    }
 }

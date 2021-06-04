@@ -1,4 +1,4 @@
 docker exec -it hdfs-namenode hdfs dfs -get /results /result
 
-docker kill spark-master spark-worker-1 spark-worker-2 spark-worker-3 spark-worker-4 hdfs-namenode hdfs-datanode-1 hdfs-datanode-2 hdfs-datanode-3 hdfs-datanode-4
-docker rm spark-master spark-worker-1 spark-worker-2 spark-worker-3 spark-worker-4 hdfs-namenode hdfs-datanode-1 hdfs-datanode-2 hdfs-datanode-3 hdfs-datanode-4
+docker kill spark-master docker_spark-worker-1 docker_spark-worker-2 hdfs-namenode docker_hdfs-datanode-1 docker_hdfs-datanode-2
+docker rm spark-master docker_spark-worker-1 docker_spark-worker-2 hdfs-namenode docker_hdfs-datanode-1 docker_hdfs-datanode-2
