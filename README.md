@@ -22,12 +22,17 @@ Bisogna installare docker:
  2. E' stato creato un file docker-compose.yml per la creazione dei container spark e hdfs. 
     Per eseguirlo bisogna far partire lo script `start-docker` all'interno 
     della directory docker/script.
-     - Verranno creati altri 3 spark-worker e hdfs-datanode
+     - Verranno creati 3 spark-worker e hdfs-datanode
      - Verranno caricati i file csv su hdfs
      - Verrà eseguito il comando 
         - `docker exec spark-master /bin/bash -c "spark-submit --class queries.Main --master "spark://spark-master:7077" /spark_data/Progetto-1.0-SNAPSHOT.jar`
      - Terminata l'esecuzione dello script precedente, i risultati verranno salvati su HDFS. 
-       Ma è possibile trovarli anche all'interno del progetto nella directory /results.
+       Ma è possibile trovarli anche all'interno del progetto nella directory /results
+       
+ 4. E' possibile consultare i risultati su hdfs tramite il comando: 
+    `docker exec -it hdfs-namenode hdfs dfs -cat [percorso/nomefile]`
+    
+ 3. Per rimuovere i container eseguire `stop-docker`
 
 ### *`Queries`*
 

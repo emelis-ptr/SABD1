@@ -188,7 +188,7 @@ public class QueryTwo {
      */
     public static JavaRDD<Tuple4<String, String, String, Integer>> initialDataSVL(JavaSparkContext sc) {
         JavaRDD<String> svlFile = sc
-                .textFile("hdfs://hdfs-namenode:9000/data/data/somministrazioni-vaccini-latest.csv")
+                .textFile("hdfs://hdfs-namenode:9000/data/somministrazioni-vaccini-latest.csv")
                 .sortBy(arg0 -> arg0.split(SPLIT_COMMA)[0], true, 10);
 
         //Data(anno-mese), area, fascia_anagrafica -- data , num_vacc_femminile

@@ -1,4 +1,6 @@
 #!/bin/bash
+cd ..
+cd ..
 
 cp target\Progetto-1.0-SNAPSHOT.jar docker\data\spark_data
 

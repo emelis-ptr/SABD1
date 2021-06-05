@@ -9,7 +9,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.*;
 import scala.Tuple2;
 import scala.Tuple3;
-import utils.LogFile;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -111,7 +110,7 @@ public class QueryOne {
      */
     public static JavaRDD<Tuple3<String, String, Integer>> initialDataSVSL(JavaSparkContext sc) {
 
-        JavaRDD<String> data = sc.textFile("hdfs://hdfs-namenode:9000/data/data/somministrazioni-vaccini-summary-latest.csv")
+        JavaRDD<String> data = sc.textFile("hdfs://hdfs-namenode:9000/data/somministrazioni-vaccini-summary-latest.csv")
                 .sortBy(arg0 -> arg0.split(SPLIT_COMMA)[0], true, 10);
 
         JavaRDD<SomministrazioniVacciniSummaryLatest> somministrazioniVacciniSummaryLatestJavaRDD = SomministrazioniVacciniSummaryLatest.getInstance(data);
@@ -127,7 +126,7 @@ public class QueryOne {
      */
     public static JavaRDD<Tuple3<String, String, String>> initialDataPST(JavaSparkContext sc) {
 
-        JavaRDD<String> data = sc.textFile("hdfs://hdfs-namenode:9000/data/data/punti-somministrazione-tipologia.csv");
+        JavaRDD<String> data = sc.textFile("hdfs://hdfs-namenode:9000/data/punti-somministrazione-tipologia.csv");
 
         JavaRDD<PuntiSomministrazioneTipologia> puntiSomministrazioneTipologiaJavaRDD = PuntiSomministrazioneTipologia.getInstance(data);
 
