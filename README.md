@@ -38,14 +38,12 @@ Bisogna installare docker:
 
 **_Query One:_** 
  - Utilizzando somministrazioni-vaccini-summary-latest.csv e
-punti-somministrazione-tipologia.csv, per ogni mese solare e per ciascuna area, calcolare il numero medio di somministrazioni che e stato effettuato giornalmente in un centro vaccinale `
-generico in quell’area e durante quel mese. Considerare i dati a partire dall’1 Gennaio 2021.
+punti-somministrazione-tipologia.csv, per ogni mese solare e per ciascuna area, calcolare il numero medio di somministrazioni che è stato effettuato giornalmente in un centro vaccinale generico in quell’area e durante quel mese. Considerare i dati a partire dall’1 Gennaio 2021.
 
 
 **_Query Two:_** 
-- Utilizzando somministrazioni-vaccini-summary-latest.csv e
-punti-somministrazione-tipologia.csv, per ogni mese solare e per ciascuna area, calcolare il numero medio di somministrazioni che e stato effettuato giornalmente in un centro vaccinale `
-generico in quell’area e durante quel mese. Considerare i dati a partire dall’1 Gennaio 2021.
+- Utilizzando somministrazioni-vaccini-latest.csv, per le donne, per ogni fascia anagrafica e per ogni mese solare, determinare le prime 5 aree per le quali e previsto il maggior numero di vaccinazioni il primo giorno del mese successivo. Per determinare la classifica mensile e prevedere il numero di vaccinazioni, considerare la retta di regressione che approssima l’andamento delle vaccinazioni giornaliere. Per la risoluzione della query, considerare le sole categorie per cui nel mese solare in esame vengono registrati almeno due giorni di campagna vaccinale. 
+Viene inoltre richiesto di calcolare la classifica per ogni mese e categoria a partire dai dati raccolti dall’1 Febbraio 2021.
 
 ### *`Framework`*
 
